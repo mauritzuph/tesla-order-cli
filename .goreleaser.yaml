@@ -1,0 +1,41 @@
+# Builds static binaries for macOS, Linux and Windows and attaches them to the
+# GitHub release. Run locally without publishing: goreleaser release --snapshot --clean
+version: 2
+
+project_name: tesla-order-cli
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - main: ./cmd/tesla-order-cli
+    binary: tesla-order-cli
+    env:
+      - CGO_ENABLED=0
+    goos: [darwin, linux, windows]
+    goarch: [amd64, arm64]
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w -X main.version={{ .Version }}
+
+archives:
+  - formats: [tar.gz]
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    files:
+      - README.md
+
+checksum:
+  name_template: checksums.txt
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^ci:"

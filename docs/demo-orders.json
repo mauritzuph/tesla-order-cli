@@ -1,0 +1,45 @@
+{
+  "fetched_at": "2026-11-08T09:30:00Z",
+  "orders": [
+    {
+      "referenceNumber": "RN100123456",
+      "orderStatus": "BOOKED",
+      "orderSubstatus": "_Z",
+      "modelCode": "my",
+      "countryCode": "DE",
+      "isUsed": false,
+      "isB2b": false,
+      "vin": "XP7YGCEK0TB123456",
+      "mktOptions": "MDLY,PPSW,WY19P,IPB11,APBS,SC04"
+    }
+  ],
+  "details": {
+    "RN100123456": {
+      "tasks": {
+        "deliveryDetails": {"order": 1, "complete": true, "enabled": true, "customerType": "PRIVATE",
+          "pickUpZipCode": "10115", "card": {"title": "Complete"}},
+        "tradeIn": {"order": 2, "complete": true, "enabled": true, "tradeInIntent": "No",
+          "status": "INTENT_NO_COMPLETE", "orderPlacedDate": "2026-10-02T18:12:00",
+          "card": {"title": "Complete", "subtitle": "No Trade-In"}},
+        "financing": {"order": 3, "complete": true, "enabled": true, "status": "COMPLETE",
+          "card": {"title": "Loan Approved", "subtitle": "Your loan offer has been confirmed"}},
+        "registration": {"order": 4, "complete": false, "enabled": true, "orderType": "TESLA_LENDING",
+          "currentStep": "REG_ADDRESS", "customerType": "PRIVATE",
+          "card": {"title": "Registration", "subtitle": "Provide your registration address"}},
+        "scheduling": {"order": 5, "complete": false, "enabled": true, "deliveryType": "PICKUP_SERVICE_CENTER",
+          "deliveryAddressTitle": "Berlin Schönefeld", "deliveryWindowDisplay": "Nov 20 - Nov 27",
+          "isSelfSchedulingAvailable": true, "readyToAccept": true, "isMoreThanTwoWeeks": false,
+          "vehicleTitleStatus": "NEW", "modelCode": "my",
+          "card": {"title": "Schedule Delivery Appointment", "subtitle": "Choose a date and time for your delivery"}},
+        "carbonCredit": {"order": 6, "complete": true, "enabled": true,
+          "card": {"title": "Complete"}},
+        "finalPayment": {"order": 8, "complete": false, "enabled": true, "status": "PAYMENT_PENDING",
+          "amountDue": 4950, "amountSent": 0, "currencyFormat": {"currencyCode": "EUR"},
+          "card": {"title": "Final Payment", "subtitle": "Amount due before delivery"}},
+        "deliveryAcceptance": {"order": 10, "complete": false, "enabled": false, "model": "Model Y",
+          "deliveryType": "PICKUP_SERVICE_CENTER",
+          "card": {"title": "Delivery Day", "subtitle": "Accept delivery terms on delivery day"}}
+      }
+    }
+  }
+}

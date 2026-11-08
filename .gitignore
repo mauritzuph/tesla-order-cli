@@ -1,0 +1,11 @@
+# Build output
+/tesla-order-cli
+/tesla-order-cli.exe
+/dist/
+
+# Never commit credentials or order data
+tokens.json
+*.tokens.json
+orders.json
+*.dump.json
+*.dump.yaml
