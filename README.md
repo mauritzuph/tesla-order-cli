@@ -1,14 +1,13 @@
 # tesla-order-cli
 
-![tesla-order-cli showing an order: status, delivery, payment and the delivery checklist](docs/check.png)
+<img src="docs/check.png" alt="tesla-order-cli showing an order: status, delivery, payment and the delivery checklist" width="500">
 
 <sub>Example output with demo data (`tesla-order-cli show -i docs/demo-orders.json`).</sub>
 
 Show your Tesla order details (status, delivery, payment, the app's delivery checklist) and what
 changed since the last check: delivery window, VIN, appointment and so on.
 
-A single binary for macOS, Linux and Windows. Inspired by
-[niklaswa/tesla-order-status](https://github.com/niklaswa/tesla-order-status).
+A single binary for macOS, Linux and Windows.
 
 - **Login once, in your normal browser.** On macOS a tiny helper app is registered for `tesla://`
   links, so when Tesla redirects there after login, the callback lands straight in the tool. No
@@ -28,6 +27,11 @@ A single binary for macOS, Linux and Windows. Inspired by
 macOS-only. On Linux and Windows, `login` opens the browser and you paste the
 `tesla://auth/callback?code=...` URL from the browser's Developer Tools into the terminal.
 **Linux and Windows are not tested**; the binaries are built for them, but expect rough edges.
+
+**Only tested with a German order so far.** Orders from other countries may return different
+fields or values, so some details could be missing or shown as `—`. Use `--country` for your
+country code, and if something looks off, `dump` shows the raw data. An issue with what you see
+(with personal data removed) helps a lot.
 
 ## Install
 
@@ -59,6 +63,15 @@ Or build from source with Go:
 
 ```bash
 go install github.com/mauritzuph/tesla-order-cli/cmd/tesla-order-cli@latest
+```
+
+Or run it straight from a clone, without installing anything:
+
+```bash
+git clone https://github.com/mauritzuph/tesla-order-cli.git
+cd tesla-order-cli
+go run ./cmd/tesla-order-cli login
+go run ./cmd/tesla-order-cli check
 ```
 
 ## Usage
@@ -163,10 +176,6 @@ doesn't need. A token stored on disk shouldn't be able to do that.
 - `TeslaOrderCLICallback.app`: the `tesla://` helper (macOS).
 - `debug/`: request/response dumps from `--debug` runs. Safe to delete.
 
-Upgrading from `tesla-order-tracker`, the project's earlier name: on the first run the old
-`~/.tesla-order-tracker/` folder is moved to `~/.tesla-order-cli/`, so you stay logged in. The old
-`tesla://` helper is removed; `login` sets up the renamed one when needed.
-
 ## Debugging the API
 
 `--debug` dumps every API request and response: method, URL, request body, status code,
@@ -242,6 +251,18 @@ Run the same scan locally before pushing:
 gitleaks git . --redact && gitleaks dir . --redact
 ```
 
+## Contributing
+
+Contributions are welcome! Feel free to open an
+[issue](https://github.com/mauritzuph/tesla-order-cli/issues) for bugs, ideas or questions, or send a
+[pull request](https://github.com/mauritzuph/tesla-order-cli/pulls). Reports from Linux and Windows
+users are especially helpful.
+
+## License
+
+[MIT](LICENSE)
+
 ## Disclaimer
 
 Uses unofficial Tesla endpoints that can change without notice. Not affiliated with Tesla.
+Inspired by [niklaswa/tesla-order-status](https://github.com/niklaswa/tesla-order-status).
