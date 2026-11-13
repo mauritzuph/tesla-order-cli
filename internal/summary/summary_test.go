@@ -95,6 +95,27 @@ func TestDecodedVIN(t *testing.T) {
 	}
 }
 
+func TestLikelyTransport(t *testing.T) {
+	for _, c := range []struct {
+		vin, country string
+		want         any
+	}{
+		{"LRW3F7FS1PC000042", "AU", "Ship (CN → AU)"},
+		{"LRWYGCEK1PC000042", "DE", "Ship (CN → DE)"},
+		{"XP7YGCEK2RB000042", "nl", "Truck or train"},
+		{"XP7YGCEK2RB000042", "IE", "Ship (DE → IE)"},
+		{"7SAYGDEE1TA000042", "CA", "Truck or train"},
+		{"7SAYGDEE1TA000042", "KR", "Ship (US → KR)"},
+		{"7SAYGDEE1TA000042", "", nil},
+		{"5YJ3E1EA1PZ000001", "DE", nil}, // unknown factory
+	} {
+		s := Summarize(map[string]any{"order": map[string]any{"vin": c.vin, "countryCode": c.country}})
+		if got := s.Value("delivery", "likely_transport"); got != c.want {
+			t.Errorf("%s/%s: got %v, want %v", c.vin, c.country, got, c.want)
+		}
+	}
+}
+
 func TestEmptyEntry(t *testing.T) {
 	s := Summarize(map[string]any{"order": map[string]any{}, "details": nil})
 	if len(s.Tasks) != 0 || s.Value("order", "model") != nil {

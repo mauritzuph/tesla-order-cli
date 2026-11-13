@@ -1,4 +1,5 @@
-// Package store keeps local state: tokens and the last order snapshot.
+// Package store keeps local state: tokens, the last order snapshot and the
+// order timelines.
 package store
 
 import (
@@ -10,6 +11,7 @@ import (
 	"path/filepath"
 
 	"github.com/mauritzuph/tesla-order-cli/internal/auth"
+	"github.com/mauritzuph/tesla-order-cli/internal/timeline"
 )
 
 const EnvDataDir = "TESLA_ORDER_CLI_HOME"
@@ -61,6 +63,7 @@ func New(dir string) *Store { return &Store{Dir: dir} }
 
 func (s *Store) TokensPath() string   { return filepath.Join(s.Dir, "tokens.json") }
 func (s *Store) SnapshotPath() string { return filepath.Join(s.Dir, "orders.json") }
+func (s *Store) TimelinePath() string { return filepath.Join(s.Dir, "timeline.json") }
 
 // LoadTokens returns nil when there are no (readable) tokens.
 func (s *Store) LoadTokens() *auth.Tokens {
@@ -91,6 +94,17 @@ func (s *Store) LoadSnapshot() *Snapshot {
 }
 
 func (s *Store) SaveSnapshot(snap Snapshot) error { return s.write(s.SnapshotPath(), snap) }
+
+// LoadTimeline returns an empty timeline when there is none (yet).
+func (s *Store) LoadTimeline() timeline.Timelines {
+	t := timeline.Timelines{}
+	if !s.read(s.TimelinePath(), &t) || t == nil {
+		return timeline.Timelines{}
+	}
+	return t
+}
+
+func (s *Store) SaveTimeline(t timeline.Timelines) error { return s.write(s.TimelinePath(), t) }
 
 func (s *Store) read(path string, v any) bool {
 	data, err := os.ReadFile(path)

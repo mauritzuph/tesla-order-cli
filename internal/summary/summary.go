@@ -33,6 +33,14 @@ var taskNames = map[string]string{
 	"deliveryAcceptance": "Delivery day",
 }
 
+// overland lists, per factory country, the order countries a car usually
+// reaches by truck or train. Anything else goes by ship.
+var overland = map[string]string{
+	"US": "US CA MX",
+	"CN": "CN",
+	"DE": "AT BE BG CH CZ DE DK EE ES FI FR GB GR HR HU IT LI LT LU LV NL NO PL PT RO RS SE SI SK",
+}
+
 // uiKey matches raw paths that are UI text or app layout, not order data.
 var uiKey = regexp.MustCompile(`(?i)(^|\.)(strings|copy|card|cta|buttons?|labels?|translations|header|footer|modal|tooltip` +
 	`|placeholder|disclaimer|faq|banner|icon|image\w*|\w*Url|\w*Image\w*|\w*CropParams)(\.|$|\[)`)
@@ -171,13 +179,14 @@ func Summarize(entry map[string]any) Summary {
 	model = first(task("deliveryAcceptance", "model"), model)
 
 	vinValue := first(order["vin"], orderInfo["vin"])
-	var factory, modelYear, steering, serial any
+	var factory, modelYear, steering, serial, transport any
 	if s, ok := vinValue.(string); ok {
 		if info, ok := vin.Decode(s); ok {
 			factory, steering, serial = nonEmpty(info.Factory), nonEmpty(info.Steering), nonEmpty(info.Serial)
 			if info.ModelYear != 0 {
 				modelYear = info.ModelYear
 			}
+			transport = likelyTransport(info.FactoryCountry, order["countryCode"])
 		}
 	}
 
@@ -223,6 +232,7 @@ func Summarize(entry map[string]any) Summary {
 				{Key: "more_than_two_weeks_away", Label: "More than 2 weeks away", Value: task("scheduling", "isMoreThanTwoWeeks")},
 				{Key: "title_status", Label: "Title status", Value: task("scheduling", "vehicleTitleStatus")},
 				{Key: "eta_to_delivery_center", Label: "ETA to delivery center", Value: legacyPayment["etaToDeliveryCenter"]},
+				{Key: "likely_transport", Label: "Likely transport", Value: transport},
 				{Key: "routing_location", Label: "Routing location", Value: orderInfo["vehicleRoutingLocation"]},
 				{Key: "odometer", Label: "Odometer", Value: odometer},
 			}},
@@ -350,6 +360,20 @@ func Humanize(key string) string {
 		}
 	}
 	return b.String()
+}
+
+// likelyTransport guesses how the car gets from the factory to the order
+// country; nil when either is unknown.
+func likelyTransport(factoryCountry string, orderCountry any) any {
+	country, _ := orderCountry.(string)
+	countries, ok := overland[factoryCountry]
+	if !ok || len(country) != 2 {
+		return nil
+	}
+	if strings.Contains(" "+countries+" ", " "+strings.ToUpper(country)+" ") {
+		return "Truck or train"
+	}
+	return "Ship (" + factoryCountry + " → " + strings.ToUpper(country) + ")"
 }
 
 // nonEmpty turns "" into nil, so the field counts as missing.

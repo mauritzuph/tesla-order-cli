@@ -13,6 +13,8 @@ import (
 	"github.com/mauritzuph/tesla-order-cli/internal/diff"
 	"github.com/mauritzuph/tesla-order-cli/internal/httpx"
 	"github.com/mauritzuph/tesla-order-cli/internal/store"
+	"github.com/mauritzuph/tesla-order-cli/internal/summary"
+	"github.com/mauritzuph/tesla-order-cli/internal/timeline"
 )
 
 const (
@@ -29,6 +31,7 @@ type Result struct {
 	ExitCode int
 	Orders   map[string]any
 	Changes  []diff.Change
+	Timeline timeline.Timelines
 	FirstRun bool
 	Err      error
 }
@@ -82,11 +85,19 @@ func Run(s *store.Store, client httpx.Client, opts Options) Result {
 func compare(s *store.Store, orders map[string]any, opts Options, now time.Time) Result {
 	previous := s.LoadSnapshot()
 	snap := store.Snapshot{FetchedAt: now.UTC().Format(time.RFC3339Nano), Orders: orders}
+	var previousOrders map[string]any
+	if previous != nil {
+		previousOrders = previous.Orders
+	}
+	tl, err := updateTimeline(s, previousOrders, orders, now)
+	if err != nil {
+		return Result{ExitCode: ExitError, Err: err}
+	}
 	if previous == nil {
 		if err := s.SaveSnapshot(snap); err != nil {
 			return Result{ExitCode: ExitError, Err: err}
 		}
-		return Result{ExitCode: ExitOK, Orders: orders, FirstRun: true}
+		return Result{ExitCode: ExitOK, Orders: orders, Timeline: tl, FirstRun: true}
 	}
 	ignore := append(append([]string{}, DefaultIgnore...), opts.Ignore...)
 	changes := diff.Diff(previous.Orders, orders, ignore)
@@ -95,7 +106,27 @@ func compare(s *store.Store, orders map[string]any, opts Options, now time.Time)
 			return Result{ExitCode: ExitError, Err: err}
 		}
 	}
-	return Result{ExitCode: ExitOK, Orders: orders, Changes: changes}
+	return Result{ExitCode: ExitOK, Orders: orders, Changes: changes, Timeline: tl}
+}
+
+// updateTimeline adds the milestones since the last snapshot and saves them.
+func updateTimeline(s *store.Store, previous, current map[string]any, now time.Time) (timeline.Timelines, error) {
+	tl := s.LoadTimeline()
+	if timeline.Update(tl, summaries(previous), summaries(current), now.UTC().Format(time.RFC3339)) {
+		if err := s.SaveTimeline(tl); err != nil {
+			return nil, err
+		}
+	}
+	return tl, nil
+}
+
+func summaries(orders map[string]any) map[string]summary.Summary {
+	out := map[string]summary.Summary{}
+	for ref, entry := range orders {
+		e, _ := entry.(map[string]any)
+		out[ref] = summary.Summarize(e)
+	}
+	return out
 }
 
 // FormatChanges groups changes per order and shortens paths to what matters.

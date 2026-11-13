@@ -144,7 +144,8 @@ The summary contains:
 | Section | Fields |
 |---|---|
 | Order | model, status and substatus, VIN, factory, model year, steering side and serial number (decoded from the VIN), order placed, reservation and booked dates, country, used/business order, option codes |
-| Delivery | type (pickup/delivery), delivery center, pickup ZIP code, delivery window, appointment, self-scheduling link, vehicle ready, ready to accept, vehicle located, more than 2 weeks away, title status, ETA to delivery center, routing location, odometer |
+| Delivery | type (pickup/delivery), delivery center, pickup ZIP code, delivery window, appointment, self-scheduling link, vehicle ready, ready to accept, vehicle located, more than 2 weeks away, title status, ETA to delivery center, likely transport (ship or truck/train, from the factory and your country), routing location, odometer |
+| Timeline | when each logistics milestone was first seen (see below) |
 | Payment | final payment status, amount due and sent, financing type and status (e.g. "Credit Decision Pending"), credit application, trade-in |
 | Registration | customer type, current step, status, expected registration date, status flags |
 | Delivery checklist | the task list from the Tesla app in app order: ✓ done, ● open now, ○ not open yet, with the app's own status text |
@@ -154,6 +155,19 @@ known location (for example `orderDetails` under `registration` *or* `deliveryDe
 Fields Tesla doesn't send for your order are hidden in pretty/table output and `null` in JSON/YAML.
 Tasks the tool doesn't know yet still show up in the checklist. Colors are turned off
 automatically when the output isn't a terminal.
+
+### Timeline
+
+Every `check` records when it first saw a logistics milestone: status changes, VIN assigned,
+routing location assigned or changed, delivery window announced or moved, ETA to the delivery
+center, vehicle located, vehicle ready and appointment scheduled. Together with the likely
+transport (a Shanghai-built car ordered in Germany goes by ship), this shows roughly where your
+car is, even though Tesla doesn't say which ship it is on.
+
+The API only returns the current state, so a date is when a check noticed the change, not when it
+happened. Check often (for example from cron) for accurate dates. Whatever was already set when
+tracking started is listed as "before tracking". `show` reads the timeline too; JSON and YAML
+output include it as a `timeline` list per order.
 
 The pretty format ends with one line pointing to the author's
 [Tesla referral link](https://www.tesla.com/de_de/referral/mauritz69012). Table, JSON and YAML
@@ -173,6 +187,7 @@ doesn't need. A token stored on disk shouldn't be able to do that.
 - `tokens.json`: your Tesla tokens, readable only by your user (mode `0600` on macOS/Linux). Treat
   it like a password.
 - `orders.json`: the last snapshot, used to show what changed.
+- `timeline.json`: the milestones each check noticed, per order.
 - `TeslaOrderCLICallback.app`: the `tesla://` helper (macOS).
 - `debug/`: request/response dumps from `--debug` runs. Safe to delete.
 

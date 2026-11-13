@@ -28,6 +28,7 @@ import (
 	"github.com/mauritzuph/tesla-order-cli/internal/ordered"
 	"github.com/mauritzuph/tesla-order-cli/internal/render"
 	"github.com/mauritzuph/tesla-order-cli/internal/store"
+	"github.com/mauritzuph/tesla-order-cli/internal/timeline"
 	"github.com/mauritzuph/tesla-order-cli/internal/tracker"
 	"github.com/mauritzuph/tesla-order-cli/internal/urlhandler"
 )
@@ -400,7 +401,9 @@ func (a *app) checkCmd() *cobra.Command {
 				return &ExitError{Code: res.ExitCode, Msg: res.Err.Error()}
 			}
 			if !quiet {
-				if err := render.Render(a.deps.Stdout, render.Build(res.Orders, "", ff.all), ff.format); err != nil {
+				doc := render.Build(res.Orders, "", ff.all)
+				doc.Timelines = res.Timeline
+				if err := render.Render(a.deps.Stdout, doc, ff.format); err != nil {
 					return err
 				}
 			}
@@ -434,6 +437,7 @@ func (a *app) showCmd() *cobra.Command {
 				return err
 			}
 			var data map[string]any
+			var timelines timeline.Timelines
 			if input != "" {
 				raw, err := os.ReadFile(input)
 				if err == nil {
@@ -447,9 +451,12 @@ func (a *app) showCmd() *cobra.Command {
 				if err != nil || json.Unmarshal(raw, &data) != nil {
 					return &ExitError{Code: 1, Msg: "No snapshot yet. Run `tesla-order-cli check`."}
 				}
+				timelines = a.store.LoadTimeline()
 			}
 			fetched, _ := data["fetched_at"].(string)
-			return render.Render(a.deps.Stdout, render.Build(OrdersFromFile(data), fetched, ff.all), ff.format)
+			doc := render.Build(OrdersFromFile(data), fetched, ff.all)
+			doc.Timelines = timelines
+			return render.Render(a.deps.Stdout, doc, ff.format)
 		},
 	}
 	cmd.Flags().StringVarP(&input, "input", "i", "", "show this file instead: a snapshot or a `dump` output file")

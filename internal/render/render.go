@@ -17,6 +17,7 @@ import (
 
 	"github.com/mauritzuph/tesla-order-cli/internal/ordered"
 	"github.com/mauritzuph/tesla-order-cli/internal/summary"
+	"github.com/mauritzuph/tesla-order-cli/internal/timeline"
 )
 
 var Formats = []string{"pretty", "table", "json", "yaml"}
@@ -33,6 +34,7 @@ var (
 type Document struct {
 	FetchedAt string
 	Orders    []summary.Summary
+	Timelines timeline.Timelines // optional
 }
 
 // Build summarizes all orders (sorted by reference number).
@@ -57,7 +59,11 @@ func Build(orders map[string]any, fetchedAt string, includeAll bool) Document {
 func (d Document) Map() ordered.Map {
 	orders := make([]ordered.Map, 0, len(d.Orders))
 	for _, s := range d.Orders {
-		orders = append(orders, s.Map())
+		milestones := d.Timelines[s.ReferenceNumber]
+		if milestones == nil {
+			milestones = []timeline.Milestone{}
+		}
+		orders = append(orders, append(s.Map(), ordered.KV{Key: "timeline", Value: milestones}))
 	}
 	var fetched any
 	if d.FetchedAt != "" {
@@ -98,10 +104,11 @@ func Render(w io.Writer, doc Document, format string) error {
 	}
 	width := termWidth(w)
 	for _, s := range doc.Orders {
+		milestones := doc.Timelines[s.ReferenceNumber]
 		if format == "pretty" {
-			fmt.Fprintln(w, pretty(r, s, width))
+			fmt.Fprintln(w, pretty(r, s, milestones, width))
 		} else {
-			fmt.Fprintln(w, tables(r, s, width))
+			fmt.Fprintln(w, tables(r, s, milestones, width))
 		}
 	}
 	if format == "pretty" {
@@ -128,7 +135,7 @@ func termWidth(w io.Writer) int {
 
 // pretty ---------------------------------------------------------------------
 
-func pretty(r *lipgloss.Renderer, s summary.Summary, width int) string {
+func pretty(r *lipgloss.Renderer, s summary.Summary, milestones []timeline.Milestone, width int) string {
 	heading := r.NewStyle().Bold(true).Foreground(lipgloss.Color("6"))
 	label := r.NewStyle().Faint(true).Width(24)
 	inner := width - 6 // border + padding
@@ -144,6 +151,9 @@ func pretty(r *lipgloss.Renderer, s summary.Summary, width int) string {
 		if len(rows) > 0 {
 			parts = append(parts, heading.Render(sec.Title)+"\n"+strings.Join(rows, "\n"))
 		}
+	}
+	if len(milestones) > 0 {
+		parts = append(parts, heading.Render("Timeline")+"\n"+timelineRows(r, milestones, inner))
 	}
 	parts = append(parts, heading.Render("Delivery checklist")+"\n"+checklist(r, s.Tasks, inner))
 	if s.DataFields != nil {
@@ -190,9 +200,41 @@ func checklist(r *lipgloss.Renderer, tasks []summary.Task, width int) string {
 	return strings.Join(rows, "\n")
 }
 
+func timelineRows(r *lipgloss.Renderer, milestones []timeline.Milestone, width int) string {
+	when := r.NewStyle().Faint(true).Width(18)
+	label := r.NewStyle().Bold(true).Width(28)
+	detail := r.NewStyle().Width(width - 46)
+	var rows []string
+	for _, m := range milestones {
+		rows = append(rows, lipgloss.JoinHorizontal(lipgloss.Top,
+			when.Render(milestoneTime(m)), label.Render(m.Label), detail.Render(milestoneChange(m, true))))
+	}
+	return strings.Join(rows, "\n")
+}
+
+// milestoneTime is the check that noticed the milestone.
+func milestoneTime(m timeline.Milestone) string {
+	if m.At == "" {
+		return "before tracking"
+	}
+	return FormatValue("at", m.At, false)
+}
+
+// milestoneChange is "old → new", or just the new value.
+func milestoneChange(m timeline.Milestone, humanize bool) string {
+	if m.Key == timeline.KeyTrackingStarted {
+		return ""
+	}
+	to := FormatValue(m.Key, m.To, humanize)
+	if m.From == nil {
+		return to
+	}
+	return FormatValue(m.Key, m.From, humanize) + " → " + to
+}
+
 // table ----------------------------------------------------------------------
 
-func tables(r *lipgloss.Renderer, s summary.Summary, width int) string {
+func tables(r *lipgloss.Renderer, s summary.Summary, milestones []timeline.Milestone, width int) string {
 	head := r.NewStyle().Bold(true).Padding(0, 1)
 	cell := r.NewStyle().Padding(0, 1)
 
@@ -230,7 +272,22 @@ func tables(r *lipgloss.Renderer, s summary.Summary, width int) string {
 			FormatValue("", t.Title, false), FormatValue("", t.Subtitle, false))
 	}
 
-	out := "Order " + s.ReferenceNumber + "\n" + fields.Render() + "\nDelivery checklist\n" + tasks.Render()
+	out := "Order " + s.ReferenceNumber + "\n" + fields.Render()
+	if len(milestones) > 0 {
+		events := table.New().Border(lipgloss.NormalBorder()).Width(width).
+			Headers("When", "Milestone", "Change").
+			StyleFunc(func(row, _ int) lipgloss.Style {
+				if row == table.HeaderRow {
+					return head
+				}
+				return cell
+			})
+		for _, m := range milestones {
+			events.Row(milestoneTime(m), m.Label, milestoneChange(m, false))
+		}
+		out += "\nTimeline\n" + events.Render()
+	}
+	out += "\nDelivery checklist\n" + tasks.Render()
 	if s.DataFields != nil {
 		out += "\nAll data fields\n" + fieldsTable(r, s.DataFields, width)
 	}

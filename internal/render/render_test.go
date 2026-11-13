@@ -10,6 +10,7 @@ import (
 
 	"github.com/mauritzuph/tesla-order-cli/internal/summary"
 	"github.com/mauritzuph/tesla-order-cli/internal/testutil"
+	"github.com/mauritzuph/tesla-order-cli/internal/timeline"
 )
 
 func output(t *testing.T, format string, all bool, orders map[string]any) string {
@@ -131,5 +132,32 @@ func TestReferralHintOnlyInPretty(t *testing.T) {
 		if strings.Contains(output(t, f, false, nil), ReferralURL) {
 			t.Errorf("%s output must not contain the referral link", f)
 		}
+	}
+}
+
+func TestTimeline(t *testing.T) {
+	doc := Build(map[string]any{"RN1": testutil.Entry()}, "", false)
+	doc.Timelines = timeline.Timelines{"RN1": {
+		{Key: "status", Label: "Status", To: "BOOKED"},
+		{Key: timeline.KeyTrackingStarted, Label: "Tracking started", At: "2026-11-08T16:46:08Z"},
+		{Key: "routing_location", Label: "Routing location changed", At: "2026-11-10T08:00:00Z", From: "1001", To: "1002"},
+	}}
+	for format, wants := range map[string][]string{
+		"pretty": {"Timeline", "before tracking", "Booked", "2026-11-08 16:46", "Tracking started", "1001 → 1002"},
+		"table":  {"Timeline", "BOOKED", "Routing location changed", "1001 → 1002"},
+		"json":   {`"timeline"`, `"key": "routing_location"`, `"from": "1001"`},
+	} {
+		var buf bytes.Buffer
+		if err := Render(&buf, doc, format); err != nil {
+			t.Fatal(err)
+		}
+		for _, want := range wants {
+			if !strings.Contains(buf.String(), want) {
+				t.Errorf("%s: missing %q", format, want)
+			}
+		}
+	}
+	if out := output(t, "pretty", false, nil); strings.Contains(out, "Timeline") {
+		t.Error("no timeline section without milestones")
 	}
 }

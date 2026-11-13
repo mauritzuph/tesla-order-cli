@@ -121,3 +121,22 @@ func TestFormatChanges(t *testing.T) {
 		t.Fatalf("got\n%s", got)
 	}
 }
+
+func TestTimelineRecordsMilestones(t *testing.T) {
+	s := setup(t)
+	run(s, testutil.NewFakeHTTP(routes("BOOKED", "")))
+	run(s, testutil.NewFakeHTTP(routes("BOOKED", "")))
+	res := run(s, testutil.NewFakeHTTP(routes("BOOKED", "Nov 20 - Nov 30")))
+
+	got := s.LoadTimeline()["RN1"]
+	if len(got) != 3 || got[0].Key != "status" || got[0].At != "" || got[1].Key != "tracking_started" {
+		t.Fatalf("got %+v", got)
+	}
+	if w := got[2]; w.Key != "window" || w.Label != "Delivery window announced" || w.To != "Nov 20 - Nov 30" ||
+		w.At != now.UTC().Format(time.RFC3339) {
+		t.Errorf("got %+v", w)
+	}
+	if len(res.Timeline["RN1"]) != 3 {
+		t.Errorf("result timeline: %+v", res.Timeline)
+	}
+}
