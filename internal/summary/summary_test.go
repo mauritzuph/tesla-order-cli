@@ -75,6 +75,26 @@ func TestLegacyOrderDetailsLocations(t *testing.T) {
 	}
 }
 
+func TestDecodedVIN(t *testing.T) {
+	s := Summarize(map[string]any{"order": map[string]any{"vin": "LRW3F7FS1PC000042"}})
+	for key, want := range map[string]any{
+		"factory": "Shanghai, China", "model_year": 2023, "steering": "Right-hand drive", "serial_number": "000042",
+	} {
+		if got := s.Value("order", key); got != want {
+			t.Errorf("%s = %v, want %v", key, got, want)
+		}
+	}
+	// nothing decoded until a full VIN is assigned
+	for _, v := range []any{nil, "5YJ3E"} {
+		s := Summarize(map[string]any{"order": map[string]any{"vin": v}})
+		for _, key := range []string{"factory", "model_year", "steering", "serial_number"} {
+			if got := s.Value("order", key); got != nil {
+				t.Errorf("%v: %s = %v", v, key, got)
+			}
+		}
+	}
+}
+
 func TestEmptyEntry(t *testing.T) {
 	s := Summarize(map[string]any{"order": map[string]any{}, "details": nil})
 	if len(s.Tasks) != 0 || s.Value("order", "model") != nil {

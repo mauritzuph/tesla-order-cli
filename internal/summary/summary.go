@@ -15,6 +15,7 @@ import (
 	"unicode"
 
 	"github.com/mauritzuph/tesla-order-cli/internal/ordered"
+	"github.com/mauritzuph/tesla-order-cli/internal/vin"
 )
 
 var modelNames = map[string]string{
@@ -169,6 +170,17 @@ func Summarize(entry map[string]any) Summary {
 	}
 	model = first(task("deliveryAcceptance", "model"), model)
 
+	vinValue := first(order["vin"], orderInfo["vin"])
+	var factory, modelYear, steering, serial any
+	if s, ok := vinValue.(string); ok {
+		if info, ok := vin.Decode(s); ok {
+			factory, steering, serial = nonEmpty(info.Factory), nonEmpty(info.Steering), nonEmpty(info.Serial)
+			if info.ModelYear != 0 {
+				modelYear = info.ModelYear
+			}
+		}
+	}
+
 	ref, _ := order["referenceNumber"].(string)
 	return Summary{
 		ReferenceNumber: ref,
@@ -178,7 +190,11 @@ func Summarize(entry map[string]any) Summary {
 				{Key: "model_code", Label: "Model code", Value: modelCode},
 				{Key: "status", Label: "Status", Value: order["orderStatus"], AlwaysShow: true},
 				{Key: "substatus", Label: "Substatus", Value: order["orderSubstatus"]},
-				{Key: "vin", Label: "VIN", Value: first(order["vin"], orderInfo["vin"]), AlwaysShow: true},
+				{Key: "vin", Label: "VIN", Value: vinValue, AlwaysShow: true},
+				{Key: "factory", Label: "Factory", Value: factory},
+				{Key: "model_year", Label: "Model year", Value: modelYear},
+				{Key: "steering", Label: "Steering", Value: steering},
+				{Key: "serial_number", Label: "Serial number", Value: serial},
 				{Key: "order_placed", Label: "Order placed", Value: first(task("tradeIn", "orderPlacedDate"), orderInfo["orderPlacedDate"])},
 				{Key: "reservation_date", Label: "Reserved", Value: orderInfo["reservationDate"]},
 				{Key: "order_booked_date", Label: "Booked", Value: orderInfo["orderBookedDate"]},
@@ -334,6 +350,14 @@ func Humanize(key string) string {
 		}
 	}
 	return b.String()
+}
+
+// nonEmpty turns "" into nil, so the field counts as missing.
+func nonEmpty(s string) any {
+	if s == "" {
+		return nil
+	}
+	return s
 }
 
 func money(amount, currency any) any {

@@ -143,7 +143,7 @@ The summary contains:
 
 | Section | Fields |
 |---|---|
-| Order | model, status and substatus, VIN, order placed, reservation and booked dates, country, used/business order, option codes |
+| Order | model, status and substatus, VIN, factory, model year, steering side and serial number (decoded from the VIN), order placed, reservation and booked dates, country, used/business order, option codes |
 | Delivery | type (pickup/delivery), delivery center, pickup ZIP code, delivery window, appointment, self-scheduling link, vehicle ready, ready to accept, vehicle located, more than 2 weeks away, title status, ETA to delivery center, routing location, odometer |
 | Payment | final payment status, amount due and sent, financing type and status (e.g. "Credit Decision Pending"), credit application, trade-in |
 | Registration | customer type, current step, status, expected registration date, status flags |
