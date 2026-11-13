@@ -1,8 +1,8 @@
 # tesla-order-cli
 
-<img src="docs/check.png" alt="tesla-order-cli showing an order: status, delivery, payment and the delivery checklist" width="500">
+<img src="docs/check.png" alt="tesla-order-cli showing an order: status, decoded VIN, delivery with likely transport, payment, timeline and the delivery checklist" width="500">
 
-<sub>Example output with demo data (`tesla-order-cli show -i docs/demo-orders.json`).</sub>
+<sub>Example output with demo data (`tesla-order-cli show --data-dir docs/demo`).</sub>
 
 Show your Tesla order details (status, delivery, payment, the app's delivery checklist) and what
 changed since the last check: delivery window, VIN, appointment and so on.

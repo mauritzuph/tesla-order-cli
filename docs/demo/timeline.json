@@ -1,0 +1,9 @@
+{
+  "RN100123456": [
+    {"key": "status", "label": "Status", "to": "BOOKED"},
+    {"key": "tracking_started", "label": "Tracking started", "at": "2026-10-02T18:30:00Z"},
+    {"key": "window", "label": "Delivery window announced", "at": "2026-10-14T07:00:00Z", "to": "Dec 1 - Dec 15"},
+    {"key": "vin", "label": "VIN assigned", "at": "2026-10-21T07:00:00Z", "to": "LRW3E7EK0TC123456"},
+    {"key": "window", "label": "Delivery window changed", "at": "2026-11-06T07:00:00Z", "from": "Dec 1 - Dec 15", "to": "Nov 20 - Nov 27"}
+  ]
+}

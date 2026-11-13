@@ -5,12 +5,12 @@
       "referenceNumber": "RN100123456",
       "orderStatus": "BOOKED",
       "orderSubstatus": "_Z",
-      "modelCode": "my",
+      "modelCode": "m3",
       "countryCode": "DE",
       "isUsed": false,
       "isB2b": false,
-      "vin": "XP7YGCEK0TB123456",
-      "mktOptions": "MDLY,PPSW,WY19P,IPB11,APBS,SC04"
+      "vin": "LRW3E7EK0TC123456",
+      "mktOptions": "MDL3,PPSW,W38A,IPB12,APBS,SC04"
     }
   ],
   "details": {
@@ -29,14 +29,14 @@
         "scheduling": {"order": 5, "complete": false, "enabled": true, "deliveryType": "PICKUP_SERVICE_CENTER",
           "deliveryAddressTitle": "Berlin Schönefeld", "deliveryWindowDisplay": "Nov 20 - Nov 27",
           "isSelfSchedulingAvailable": true, "readyToAccept": true, "isMoreThanTwoWeeks": false,
-          "vehicleTitleStatus": "NEW", "modelCode": "my",
+          "vehicleTitleStatus": "NEW", "modelCode": "m3",
           "card": {"title": "Schedule Delivery Appointment", "subtitle": "Choose a date and time for your delivery"}},
         "carbonCredit": {"order": 6, "complete": true, "enabled": true,
           "card": {"title": "Complete"}},
         "finalPayment": {"order": 8, "complete": false, "enabled": true, "status": "PAYMENT_PENDING",
           "amountDue": 4950, "amountSent": 0, "currencyFormat": {"currencyCode": "EUR"},
           "card": {"title": "Final Payment", "subtitle": "Amount due before delivery"}},
-        "deliveryAcceptance": {"order": 10, "complete": false, "enabled": false, "model": "Model Y",
+        "deliveryAcceptance": {"order": 10, "complete": false, "enabled": false, "model": "Model 3",
           "deliveryType": "PICKUP_SERVICE_CENTER",
           "card": {"title": "Delivery Day", "subtitle": "Accept delivery terms on delivery day"}}
       }
