@@ -144,7 +144,7 @@ The summary contains:
 | Section | Fields |
 |---|---|
 | Order | model, status and substatus, VIN, factory, model year, steering side and serial number (decoded from the VIN), order placed, reservation and booked dates, country, used/business order, option codes and what they mean (see below) |
-| Delivery | type (pickup/delivery), delivery center, pickup ZIP code, delivery window, appointment, self-scheduling link, vehicle ready, ready to accept, vehicle located, more than 2 weeks away, title status, ETA to delivery center, likely transport (ship or truck/train, from the factory and your country), routing location, odometer |
+| Delivery | type (pickup/delivery), delivery center, pickup ZIP code, delivery window, appointment, self-scheduling link, vehicle ready, ready to accept, vehicle located, more than 2 weeks away, title status, ETA to delivery center, likely transport (ship or truck/train, from the factory and your country), routing location (with name, address and phone if you add a [locations file](#location-names)), odometer |
 | Timeline | when each logistics milestone was first seen (see below) |
 | Payment | final payment status, amount due and sent, financing type and status (e.g. "Credit Decision Pending"), credit application, finance product and partner, monthly payment, term, interest rate, mileage per year, approved and financed amount (once Tesla sends them, usually after the credit decision), amount paid and payment method for cash orders, trade-in |
 | Registration | customer type, current step, status, expected registration date, status flags |
@@ -171,6 +171,26 @@ Add or correct labels in `option-codes.json` in the data folder; they win over t
   "IPB11": "Interior: All Black"
 }
 ```
+
+### Location names
+
+Tesla only sends the routing location as a number. To see which Tesla location that is, put a
+`locations.json` in the data folder that maps IDs to names, or to objects in the shape of Tesla's
+locations API:
+
+```json
+{
+  "1234": "Berlin-Schönefeld",
+  "5678": {
+    "display_name": "Hanau Holzpark",
+    "address": {"address_1": "Street 1", "postal_code": "63450", "city": "Hanau"},
+    "phone": "+49 ..."
+  }
+}
+```
+
+The tool doesn't ship such a list: Tesla's locations API blocks scripts, and the lists going
+around have no license that allows bundling them.
 
 ### Timeline
 
@@ -205,6 +225,7 @@ doesn't need. A token stored on disk shouldn't be able to do that.
 - `orders.json`: the last snapshot, used to show what changed.
 - `timeline.json`: the milestones each check noticed, per order.
 - `option-codes.json`: your own option code labels (optional, see [Option codes](#option-codes)).
+- `locations.json`: names for routing location IDs (optional, see [Location names](#location-names)).
 - `TeslaOrderCLICallback.app`: the `tesla://` helper (macOS).
 - `debug/`: request/response dumps from `--debug` runs. Safe to delete.
 

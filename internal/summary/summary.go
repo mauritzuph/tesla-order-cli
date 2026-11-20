@@ -14,6 +14,7 @@ import (
 	"strings"
 	"unicode"
 
+	"github.com/mauritzuph/tesla-order-cli/internal/locations"
 	"github.com/mauritzuph/tesla-order-cli/internal/options"
 	"github.com/mauritzuph/tesla-order-cli/internal/ordered"
 	"github.com/mauritzuph/tesla-order-cli/internal/vin"
@@ -205,6 +206,13 @@ func Summarize(entry map[string]any) Summary {
 		}
 	}
 
+	// routing_location stays the raw ID, so the timeline doesn't see a change
+	// when a name becomes known.
+	var routingName, routingAddress, routingPhone any
+	if l, ok := locations.Lookup(orderInfo["vehicleRoutingLocation"]); ok {
+		routingName, routingAddress, routingPhone = nonEmpty(l.Name), nonEmpty(l.Address), nonEmpty(l.Phone)
+	}
+
 	ref, _ := order["referenceNumber"].(string)
 	return Summary{
 		ReferenceNumber: ref,
@@ -250,6 +258,9 @@ func Summarize(entry map[string]any) Summary {
 				{Key: "eta_to_delivery_center", Label: "ETA to delivery center", Value: legacyPayment["etaToDeliveryCenter"]},
 				{Key: "likely_transport", Label: "Likely transport", Value: transport},
 				{Key: "routing_location", Label: "Routing location", Value: orderInfo["vehicleRoutingLocation"]},
+				{Key: "routing_location_name", Label: "Routing location name", Value: routingName},
+				{Key: "routing_location_address", Label: "Routing location address", Value: routingAddress},
+				{Key: "routing_location_phone", Label: "Routing location phone", Value: routingPhone},
 				{Key: "odometer", Label: "Odometer", Value: odometer},
 			}},
 			{Key: "payment", Title: "Payment", Fields: []Field{

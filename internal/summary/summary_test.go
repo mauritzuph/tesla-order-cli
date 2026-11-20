@@ -2,9 +2,12 @@ package summary
 
 import (
 	"encoding/json"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
+	"github.com/mauritzuph/tesla-order-cli/internal/locations"
 	"github.com/mauritzuph/tesla-order-cli/internal/ordered"
 	"github.com/mauritzuph/tesla-order-cli/internal/testutil"
 )
@@ -78,6 +81,28 @@ func TestLegacyOrderDetailsLocations(t *testing.T) {
 		"orderDetails": map[string]any{"orderBookedDate": "x"}}}}
 	if got := Summarize(entry).Value("order", "order_booked_date"); got != "x" {
 		t.Errorf("got %v", got)
+	}
+}
+
+func TestRoutingLocationName(t *testing.T) {
+	path := filepath.Join(t.TempDir(), locations.FileName)
+	if err := os.WriteFile(path, []byte(`{"1234": {"display_name": "Somewhere Center", "address": {"city": "Berlin"}}}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := locations.Load(path); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = locations.Load("") })
+	entry := map[string]any{"details": map[string]any{"tasks": map[string]any{"registration": map[string]any{
+		"orderDetails": map[string]any{"vehicleRoutingLocation": 1234.0}}}}}
+	s := Summarize(entry)
+	for key, want := range map[string]any{
+		"routing_location": 1234.0, "routing_location_name": "Somewhere Center",
+		"routing_location_address": "Berlin", "routing_location_phone": nil,
+	} {
+		if got := s.Value("delivery", key); got != want {
+			t.Errorf("%s = %v, want %v", key, got, want)
+		}
 	}
 }
 
