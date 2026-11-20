@@ -350,8 +350,11 @@ func FormatValue(key string, v any, humanize bool) string {
 		}
 		return "no"
 	case float64:
-		if key == "interest_rate" {
+		switch key {
+		case "interest_rate":
 			return number(x) + " %"
+		case "routing_location": // an ID, not an amount
+			return strconv.FormatFloat(x, 'f', -1, 64)
 		}
 		return number(x)
 	case summary.Money:

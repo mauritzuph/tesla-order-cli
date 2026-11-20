@@ -118,6 +118,7 @@ func TestFormatValue(t *testing.T) {
 		{"option_codes", []any{"APBS", "MDL3"}, true, "APBS, MDL3"},
 		{"x", map[string]any{"a": "B_C"}, true, "a: B c"},
 		{"interest_rate", 3.99, true, "3.99 %"},
+		{"routing_location", 4321.0, true, "4321"},
 		{"options", ordered.Map{{Key: "APBS", Value: "Autopilot"}, {Key: "PPSW", Value: "Paint: Pearl White"}}, true, "Autopilot\nPaint: Pearl White"},
 	}
 	for _, c := range cases {
