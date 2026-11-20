@@ -371,6 +371,20 @@ func FormatValue(key string, v any, humanize bool) string {
 			parts = append(parts, k+": "+FormatValue(k, x[k], humanize))
 		}
 		return strings.Join(parts, ", ")
+	case ordered.Map:
+		// decoded option codes: one label per line
+		parts := make([]string, 0, len(x))
+		for _, kv := range x {
+			if key == "options" {
+				parts = append(parts, FormatValue(kv.Key, kv.Value, false))
+			} else {
+				parts = append(parts, kv.Key+": "+FormatValue(kv.Key, kv.Value, humanize))
+			}
+		}
+		if key == "options" {
+			return strings.Join(parts, "\n")
+		}
+		return strings.Join(parts, ", ")
 	case []any:
 		parts := make([]string, 0, len(x))
 		for _, e := range x {

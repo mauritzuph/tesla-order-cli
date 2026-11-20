@@ -143,7 +143,7 @@ The summary contains:
 
 | Section | Fields |
 |---|---|
-| Order | model, status and substatus, VIN, factory, model year, steering side and serial number (decoded from the VIN), order placed, reservation and booked dates, country, used/business order, option codes |
+| Order | model, status and substatus, VIN, factory, model year, steering side and serial number (decoded from the VIN), order placed, reservation and booked dates, country, used/business order, option codes and what they mean (see below) |
 | Delivery | type (pickup/delivery), delivery center, pickup ZIP code, delivery window, appointment, self-scheduling link, vehicle ready, ready to accept, vehicle located, more than 2 weeks away, title status, ETA to delivery center, likely transport (ship or truck/train, from the factory and your country), routing location, odometer |
 | Timeline | when each logistics milestone was first seen (see below) |
 | Payment | final payment status, amount due and sent, financing type and status (e.g. "Credit Decision Pending"), credit application, finance product and partner, monthly payment, term, interest rate, mileage per year, approved and financed amount (once Tesla sends them, usually after the credit decision), amount paid and payment method for cash orders, trade-in |
@@ -155,6 +155,22 @@ known location (for example `orderDetails` under `registration` *or* `deliveryDe
 Fields Tesla doesn't send for your order are hidden in pretty/table output and `null` in JSON/YAML.
 Tasks the tool doesn't know yet still show up in the checklist. Colors are turned off
 automatically when the output isn't a terminal.
+
+### Option codes
+
+The order lists its configuration as option codes (`PN00`, `W38A`, ...). Codes with a well-known
+meaning are shown as labels under "Options", for example `PN00` as "Paint: Quicksilver". The
+built-in list is short on purpose: Tesla doesn't publish these codes, and a wrong label is worse
+than none, so unknown codes only appear in the raw "Option codes" line.
+
+Add or correct labels in `option-codes.json` in the data folder; they win over the built-in ones:
+
+```json
+{
+  "W38A": "Wheels: 18\" Photon",
+  "IPB11": "Interior: All Black"
+}
+```
 
 ### Timeline
 
@@ -188,6 +204,7 @@ doesn't need. A token stored on disk shouldn't be able to do that.
   it like a password.
 - `orders.json`: the last snapshot, used to show what changed.
 - `timeline.json`: the milestones each check noticed, per order.
+- `option-codes.json`: your own option code labels (optional, see [Option codes](#option-codes)).
 - `TeslaOrderCLICallback.app`: the `tesla://` helper (macOS).
 - `debug/`: request/response dumps from `--debug` runs. Safe to delete.
 

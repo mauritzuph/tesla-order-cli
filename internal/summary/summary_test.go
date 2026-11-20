@@ -5,6 +5,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/mauritzuph/tesla-order-cli/internal/ordered"
 	"github.com/mauritzuph/tesla-order-cli/internal/testutil"
 )
 
@@ -34,6 +35,11 @@ func TestSummaryReadsCurrentFieldLocations(t *testing.T) {
 	codes := s.Value("order", "option_codes").([]any)
 	if len(codes) != 3 || codes[0] != "APBS" {
 		t.Errorf("option codes %v", codes)
+	}
+	// W38A has no built-in label, so only the known codes are decoded
+	labels := s.Value("order", "options").(ordered.Map)
+	if len(labels) != 2 || labels[0].Key != "APBS" || labels[0].Value != "Autopilot" || labels[1].Value != "Model 3" {
+		t.Errorf("options %v", labels)
 	}
 }
 

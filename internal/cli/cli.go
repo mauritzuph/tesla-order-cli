@@ -25,6 +25,7 @@ import (
 	"github.com/mauritzuph/tesla-order-cli/internal/callback"
 	"github.com/mauritzuph/tesla-order-cli/internal/debug"
 	"github.com/mauritzuph/tesla-order-cli/internal/httpx"
+	"github.com/mauritzuph/tesla-order-cli/internal/options"
 	"github.com/mauritzuph/tesla-order-cli/internal/ordered"
 	"github.com/mauritzuph/tesla-order-cli/internal/render"
 	"github.com/mauritzuph/tesla-order-cli/internal/store"
@@ -141,6 +142,9 @@ func (a *app) rootCmd() *cobra.Command {
 				}
 			}
 			a.store = store.New(a.dataDir)
+			if err := options.LoadOverrides(filepath.Join(a.dataDir, options.FileName)); err != nil {
+				slog.Warn("Ignoring option code labels: " + err.Error())
+			}
 			return nil
 		},
 	}

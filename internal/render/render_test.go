@@ -8,6 +8,7 @@ import (
 
 	"gopkg.in/yaml.v3"
 
+	"github.com/mauritzuph/tesla-order-cli/internal/ordered"
 	"github.com/mauritzuph/tesla-order-cli/internal/summary"
 	"github.com/mauritzuph/tesla-order-cli/internal/testutil"
 	"github.com/mauritzuph/tesla-order-cli/internal/timeline"
@@ -117,6 +118,7 @@ func TestFormatValue(t *testing.T) {
 		{"option_codes", []any{"APBS", "MDL3"}, true, "APBS, MDL3"},
 		{"x", map[string]any{"a": "B_C"}, true, "a: B c"},
 		{"interest_rate", 3.99, true, "3.99 %"},
+		{"options", ordered.Map{{Key: "APBS", Value: "Autopilot"}, {Key: "PPSW", Value: "Paint: Pearl White"}}, true, "Autopilot\nPaint: Pearl White"},
 	}
 	for _, c := range cases {
 		if got := FormatValue(c.key, c.v, c.humanize); got != c.want {

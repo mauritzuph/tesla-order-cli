@@ -14,6 +14,7 @@ import (
 	"strings"
 	"unicode"
 
+	"github.com/mauritzuph/tesla-order-cli/internal/options"
 	"github.com/mauritzuph/tesla-order-cli/internal/ordered"
 	"github.com/mauritzuph/tesla-order-cli/internal/vin"
 )
@@ -166,15 +167,23 @@ func Summarize(entry map[string]any) Summary {
 	if o, ok := orderInfo["vehicleOdometer"]; ok && o != nil {
 		odometer = strings.TrimSpace(fmt.Sprintf("%v %v", plain(o), plain(first(orderInfo["vehicleOdometerType"], ""))))
 	}
-	var optionCodes any
+	var optionCodes, optionLabels any
 	if s, ok := order["mktOptions"].(string); ok && s != "" {
 		var codes []any
+		var labels ordered.Map
 		for _, c := range strings.Split(s, ",") {
-			if c != "" {
-				codes = append(codes, c)
+			if c == "" {
+				continue
+			}
+			codes = append(codes, c)
+			if l := options.Label(c); l != "" {
+				labels = append(labels, ordered.KV{Key: c, Value: l})
 			}
 		}
 		optionCodes = codes
+		if labels != nil {
+			optionLabels = labels
+		}
 	}
 	var model any
 	if code, ok := modelCode.(string); ok {
@@ -216,6 +225,7 @@ func Summarize(entry map[string]any) Summary {
 				{Key: "country", Label: "Country", Value: order["countryCode"]},
 				{Key: "used", Label: "Used vehicle", Value: order["isUsed"]},
 				{Key: "business_order", Label: "Business order", Value: order["isB2b"]},
+				{Key: "options", Label: "Options", Value: optionLabels},
 				{Key: "option_codes", Label: "Option codes", Value: optionCodes},
 			}},
 			{Key: "delivery", Title: "Delivery", Fields: []Field{
