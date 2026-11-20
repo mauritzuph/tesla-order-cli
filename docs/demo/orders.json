@@ -17,7 +17,8 @@
     "RN100123456": {
       "tasks": {
         "deliveryDetails": {"order": 1, "complete": true, "enabled": true, "customerType": "PRIVATE",
-          "pickUpZipCode": "10115", "card": {"title": "Complete"}},
+          "pickUpZipCode": "10115", "orderDetails": {"vehicleRoutingLocation": 4321},
+          "card": {"title": "Complete"}},
         "tradeIn": {"order": 2, "complete": true, "enabled": true, "tradeInIntent": "No",
           "status": "INTENT_NO_COMPLETE", "orderPlacedDate": "2026-10-02T18:12:00",
           "card": {"title": "Complete", "subtitle": "No Trade-In"}},
@@ -35,7 +36,13 @@
           "card": {"title": "Complete"}},
         "finalPayment": {"order": 8, "complete": false, "enabled": true, "status": "PAYMENT_PENDING",
           "amountDue": 4950, "amountSent": 0, "currencyFormat": {"currencyCode": "EUR"},
+          "data": {"amountDueFinancier": 40000, "financingDetails": {"financialProductType": "LOAN",
+            "teslaFinanceDetails": {"monthlyPayment": 489, "termsInMonths": 48, "interestRate": 3.99,
+              "approvedLoanAmount": 40000}}},
           "card": {"title": "Final Payment", "subtitle": "Amount due before delivery"}},
+        "agreements": {"order": 9, "complete": true, "enabled": true, "status": "COMPLETE",
+          "teslaFinanceDetails": {"partnerName": "Example Bank AG"},
+          "card": {"title": "Complete", "subtitle": "Finance Agreement has been signed with Example Bank AG"}},
         "deliveryAcceptance": {"order": 10, "complete": false, "enabled": false, "model": "Model 3",
           "deliveryType": "PICKUP_SERVICE_CENTER",
           "card": {"title": "Delivery Day", "subtitle": "Accept delivery terms on delivery day"}}

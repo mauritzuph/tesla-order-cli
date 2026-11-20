@@ -1,0 +1,6 @@
+{
+  "4321": {
+    "display_name": "Berlin Schönefeld",
+    "address": {"address_1": "Example Street 1", "postal_code": "12529", "city": "Schönefeld"}
+  }
+}
