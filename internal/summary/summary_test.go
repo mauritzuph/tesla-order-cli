@@ -75,6 +75,38 @@ func TestLegacyOrderDetailsLocations(t *testing.T) {
 	}
 }
 
+func TestFinancingDetails(t *testing.T) {
+	entry := map[string]any{"details": map[string]any{"tasks": map[string]any{
+		"agreements": map[string]any{"teslaFinanceDetails": map[string]any{"partnerName": "Some Bank"}},
+		"finalPayment": map[string]any{"currencyFormat": map[string]any{"currencyCode": "EUR"}, "data": map[string]any{
+			"amountDueFinancier": 40000.0,
+			"financingDetails": map[string]any{"financialProductType": "OPERATIONAL_LEASE", "teslaFinanceDetails": map[string]any{
+				"financePartnerName": "Other Bank", "monthlyPayment": 499.0, "termsInMonths": 48.0,
+				"interestRate": 3.99, "mileage": 15000.0, "approvedLoanAmount": 41000.0,
+			}},
+		}},
+	}}}
+	s := Summarize(entry)
+	for key, want := range map[string]any{
+		"finance_product": "OPERATIONAL_LEASE", "finance_partner": "Some Bank", "term_months": 48.0,
+		"interest_rate": 3.99, "mileage_per_year": 15000.0,
+		"monthly_payment": Money{499.0, "EUR"}, "approved_amount": Money{41000.0, "EUR"}, "financed_amount": Money{40000.0, "EUR"},
+	} {
+		if got := s.Value("payment", key); got != want {
+			t.Errorf("%s = %v, want %v", key, got, want)
+		}
+	}
+
+	cash := map[string]any{"details": map[string]any{"tasks": map[string]any{"finalPayment": map[string]any{"data": map[string]any{
+		"accountBalance": 0.0, "paymentDetails": []any{map[string]any{"amountPaid": 45000.0, "paymentType": "WIRE"}},
+	}}}}}
+	s = Summarize(cash)
+	if s.Value("payment", "payment_method") != "WIRE" || s.Value("payment", "amount_paid") != (Money{45000.0, nil}) ||
+		s.Value("payment", "account_balance") != (Money{0.0, nil}) || s.Value("payment", "interest_rate") != nil {
+		t.Errorf("cash: %+v", s.Section("payment"))
+	}
+}
+
 func TestDecodedVIN(t *testing.T) {
 	s := Summarize(map[string]any{"order": map[string]any{"vin": "LRW3F7FS1PC000042"}})
 	for key, want := range map[string]any{

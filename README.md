@@ -146,7 +146,7 @@ The summary contains:
 | Order | model, status and substatus, VIN, factory, model year, steering side and serial number (decoded from the VIN), order placed, reservation and booked dates, country, used/business order, option codes |
 | Delivery | type (pickup/delivery), delivery center, pickup ZIP code, delivery window, appointment, self-scheduling link, vehicle ready, ready to accept, vehicle located, more than 2 weeks away, title status, ETA to delivery center, likely transport (ship or truck/train, from the factory and your country), routing location, odometer |
 | Timeline | when each logistics milestone was first seen (see below) |
-| Payment | final payment status, amount due and sent, financing type and status (e.g. "Credit Decision Pending"), credit application, trade-in |
+| Payment | final payment status, amount due and sent, financing type and status (e.g. "Credit Decision Pending"), credit application, finance product and partner, monthly payment, term, interest rate, mileage per year, approved and financed amount (once Tesla sends them, usually after the credit decision), amount paid and payment method for cash orders, trade-in |
 | Registration | customer type, current step, status, expected registration date, status flags |
 | Delivery checklist | the task list from the Tesla app in app order: ✓ done, ● open now, ○ not open yet, with the app's own status text |
 

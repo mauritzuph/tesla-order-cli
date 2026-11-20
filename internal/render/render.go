@@ -350,6 +350,9 @@ func FormatValue(key string, v any, humanize bool) string {
 		}
 		return "no"
 	case float64:
+		if key == "interest_rate" {
+			return number(x) + " %"
+		}
 		return number(x)
 	case summary.Money:
 		amount := FormatValue(key, x.Amount, false)

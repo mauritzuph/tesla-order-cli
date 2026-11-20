@@ -116,6 +116,7 @@ func TestFormatValue(t *testing.T) {
 		{"x", "PAYMENT_COMPLETE", false, "PAYMENT_COMPLETE"},
 		{"option_codes", []any{"APBS", "MDL3"}, true, "APBS, MDL3"},
 		{"x", map[string]any{"a": "B_C"}, true, "a: B c"},
+		{"interest_rate", 3.99, true, "3.99 %"},
 	}
 	for _, c := range cases {
 		if got := FormatValue(c.key, c.v, c.humanize); got != c.want {

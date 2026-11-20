@@ -153,6 +153,12 @@ func Summarize(entry map[string]any) Summary {
 	// Older/other responses keep these under registration or deliveryDetails.
 	orderInfo := asMap(first(task("deliveryDetails", "orderDetails"), task("registration", "orderDetails")))
 	legacyPayment := asMap(task("finalPayment", "data"))
+	financingDetails := asMap(legacyPayment["financingDetails"])
+	financeTerms := asMap(financingDetails["teslaFinanceDetails"])
+	var cashPayment map[string]any
+	if payments, ok := legacyPayment["paymentDetails"].([]any); ok && len(payments) > 0 {
+		cashPayment = asMap(payments[0])
+	}
 	currency := first(task("finalPayment", "currencyFormat", "currencyCode"), task("tradeIn", "currencyCode"))
 	modelCode := first(order["modelCode"], task("scheduling", "modelCode"))
 
@@ -243,6 +249,17 @@ func Summarize(entry map[string]any) Summary {
 				{Key: "financing_type", Label: "Financing type", Value: task("registration", "orderType")},
 				{Key: "financing_status", Label: "Financing", Value: first(task("financing", "card", "title"), task("financing", "status"))},
 				{Key: "credit_application", Label: "Credit application", Value: task("registration", "alertStatuses", "orderType")},
+				{Key: "finance_product", Label: "Finance product", Value: financingDetails["financialProductType"]},
+				{Key: "finance_partner", Label: "Finance partner", Value: first(task("agreements", "teslaFinanceDetails", "partnerName"), financeTerms["financePartnerName"])},
+				{Key: "monthly_payment", Label: "Monthly payment", Value: money(financeTerms["monthlyPayment"], currency)},
+				{Key: "term_months", Label: "Term (months)", Value: financeTerms["termsInMonths"]},
+				{Key: "interest_rate", Label: "Interest rate", Value: financeTerms["interestRate"]},
+				{Key: "mileage_per_year", Label: "Mileage per year", Value: financeTerms["mileage"]},
+				{Key: "approved_amount", Label: "Approved amount", Value: money(financeTerms["approvedLoanAmount"], currency)},
+				{Key: "financed_amount", Label: "Financed amount", Value: money(legacyPayment["amountDueFinancier"], currency)},
+				{Key: "amount_paid", Label: "Amount paid", Value: money(cashPayment["amountPaid"], currency)},
+				{Key: "payment_method", Label: "Payment method", Value: cashPayment["paymentType"]},
+				{Key: "account_balance", Label: "Account balance", Value: money(legacyPayment["accountBalance"], currency)},
 				{Key: "trade_in", Label: "Trade-in", Value: task("tradeIn", "tradeInIntent")},
 				{Key: "trade_in_status", Label: "Trade-in status", Value: task("tradeIn", "status")},
 			}},
